@@ -7,15 +7,18 @@ echo "#2. wlan"
 echo " "
 read input
 
+#Checking user input.
 if [[ $input == 1 ]]
 then
 	echo " "
 	echo "Enter the ethernet device you want to randomise: (e.g. eth0 [or] eth1 [or] eth2)"
 	echo " "
 	read type_eth
-
+	
 	command1=`ifconfig | grep $type_eth`
 
+	#Checking if the returned output from 'command1' has any info about
+ 	#the existence of eth connection. If the string is empty, then user is shown to the basic troubleshoot.
 	if [ -z "$command1" ];
 	then
 	   	echo "No eth0 connection! Failed to randomise MAC of eth0."
@@ -24,7 +27,7 @@ then
 		echo "1. Please try entering an existing ethernet connection (i.e. check your input)"
 		echo "2. Please try checking the connection of ethernet cable to your computer/VM is established."
 	else
-
+		#Random mac could be implemented by utilizing $RANDOM
 		mac1="00:11:22:33:44:55"
 
 	    	sudo ifconfig $type_eth down
@@ -44,6 +47,7 @@ else
 
 	command2=`ifconfig | grep $type_wlan`
 
+ 	#The same for this part of else-code. (except it is for wlan interface)
 	if [ -z "$command2" ];
 	then
    	 	echo "wlan0/NIC Adapter not detected. Failed to randomise MAC of wlan0."
