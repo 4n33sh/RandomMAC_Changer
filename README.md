@@ -1,4 +1,7 @@
 🇲​​​​​🇦​​​​​🇨​​​​​ 🇨​​​​​🇭​​​​​🇦​​​​​🇳​​​​​🇬​​​​​🇪​​​​​🇷​​​​​
+<img src="https://img.shields.io/badge/Lincense_-Unlicense%20License-blue">
+<img src="https://img.shields.io/badge/Script_-bash-blue">
+
 
 # RandomMAC_Changer
 This repository consists of an ./bash script which changes the MAC Address of an user's desired network interface. Hassle-free to utilize and basic in nature.
@@ -13,3 +16,4 @@ Then, clone the file into your terminal by typing:
 Now, alter the permissions of the cloned file by typing: ```chmod u+x MACchange.sh```
 
 Finally Execute the file by typing: ```./MACchange.sh```
+
