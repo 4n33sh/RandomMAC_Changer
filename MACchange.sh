@@ -13,7 +13,7 @@ if [ "$EUID" -ne 0 ]; then
   echo "This script must be run by an user with sudo privileges (root works but is generally not recommended)."
   exit 1
 fi
-macchanger_bincheck=`which macchange | grep -o macchange > /dev/null &&  echo 0 || echo 1`
+macchanger_bincheck=`which macchanger | grep -o macchanger > /dev/null &&  echo 0 || echo 1`
 if ["$macchnager_bincheck" -ne 1]; then
   echo "Mac changer binary not detected! Running Automated Installation process..."
   sudo apt-get update -y && sudo apt-get install macchanger | yes
