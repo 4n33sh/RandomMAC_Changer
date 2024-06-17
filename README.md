@@ -13,3 +13,7 @@ Then, clone the file into your terminal by typing:
 Now, alter the permissions of the cloned file by typing: ```chmod u+x MACchange.sh```
 
 Finally Execute the file by typing: ```./MACchange.sh```
+
+╭────╮
+│bash│
+╰────╯
