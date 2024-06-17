@@ -1,3 +1,4 @@
+<rawtext>
 <!-- language: lang-none -->
 
    *                            )           )            (     
@@ -9,8 +10,7 @@
 | |\/| |/ _ \  | (__   | (__| __ |/ _ \ | .` | | (_ | _||   /  
 |_|  |_/_/ \_\  \___|   \___|_||_/_/ \_\|_|\_|  \___|___|_|_\  
                                                                
-
-
+</rawtext>
 
 # RandomMAC_Changer
 This repository consists of an .bash script which changes the MAC Address of an user's desired network interface. Hassle-free to utilize and basic in nature.
