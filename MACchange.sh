@@ -1,78 +1,80 @@
-#! /bin/bash
+#!/bin/bash
 
-echo "What type of network do you wish to randomise?"
+#check for root privileges
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run by a user with sudo privileges."
+    exit 1
+fi
+
+#check if macchanger is installed (or not)
+if ! command -v macchanger &> /dev/null; then
+    echo "Macchanger binary not found. Installing..."
+    sudo apt-get update -y && sudo apt-get install macchanger -y
+fi
+
+echo "What type of network do you wish to randomize?"
 echo " "
 echo "#1. eth"
 echo "#2. wlan"
 echo " "
 read input
 
-# Check for root privileges
-# $EUID is an env variable. Contains the id-value of user currently utilising the script.
-if [ "$EUID" -ne 0 ]; then
-  echo "This script must be run by an user with sudo privileges (root works but is generally not recommended)."
-  exit 1
-fi
-macchanger_bincheck=`which macchanger | grep -o macchanger > /dev/null &&  echo 0 || echo 1`
-if ["$macchnager_bincheck" -ne 1]; then
-  echo "Mac changer binary not detected! Running Automated Installation process..."
-  sudo apt-get update -y && sudo apt-get install macchanger | yes
-fi
+#list all the available interfaces and get user-input
+if [[ $input == 1 ]]; then
+    interfaces=$(ip link show | grep eth | awk '{print $2}' | tr -d ':')
+    echo "Available Ethernet interfaces: $interfaces"
+    read -p "Enter the Ethernet interface you want to randomize: " type_eth
 
-# Checking user input.
-if [[ $input == 1 ]]
-then
-	echo " "
-	echo "Enter the ethernet device you want to randomise: (e.g. eth0 [or] eth1 [or] eth2)"
-	echo " "
-	read type_eth
-	
-	command1=`ifconfig | grep $type_eth`
+    # Validate interface
+    if ! ifconfig $type_eth &> /dev/null; then
+        echo "$type_eth not found. Please check the device name."
+        exit 1
+    fi
 
-	# Checking if the returned output from 'command1' has any info about -
- 	# the existence of eth connection. If the string is empty, then user is shown to the basic troubleshoot.
-	if [ -z "$command1" ];
-	then
-	   	echo "No eth0 connection! Failed to randomise MAC of eth0."
-		echo " "
-		echo "Troubleshooting: "
-		echo "1. Please try entering an existing ethernet connection (i.e. check your input)"
-		echo "2. Please try checking the connection of ethernet cable to your computer/VM is established."
-	else
-		# Random mac could be implemented by utilizing env variable $RANDOM
-		mac1="00:11:22:33:44:55"
-
-	    	sudo ifconfig $type_eth down
-		sudo ifconfig $type_eth hw ether $mac1
-		sudo ifconfig $type_eth up
-		echo " "
-		echo "Changed MAC of $type_eth ."
-		echo "Current MAC of $type_eth is: $mac1"
-	fi
-
+    #randomize the MAC address using macchanger
+    echo "Randomizing MAC for $type_eth..."
+    sudo macchanger -r $type_eth
+    echo "Randomized MAC for $type_eth"
+    
 else
-	echo " "
-	echo "Enter the wlan/NIC device you want to randomise: (e.g. wlan0 [or] wlan1 [or] wlan2)"
-	echo " "
-	read type_wlan
-	echo " "
+    interfaces=$(ip link show | grep wlan | awk '{print $2}' | tr -d ':')
+    echo "Available WLAN interfaces: $interfaces"
+    read -p "Enter the WLAN interface you want to randomize: " type_wlan
 
-	command2=`ifconfig | grep $type_wlan`
+    #Validate interface
+    if ! ifconfig $type_wlan &> /dev/null; then
+        echo "$type_wlan not found. Please check the device name."
+        exit 1
+    fi
 
- 	# The same for this part of else-code. (except it is for wlan interface)
-	if [ -z "$command2" ];
-	then
-   	 	echo "wlan0/NIC Adapter not detected. Failed to randomise MAC of wlan0."
-		echo " "
-		echo "Troubleshooting: "
-		echo "1. Please try entering an existing NIC (i.e. check your input)"
-		echo "2. Please try checking the connection of NIC to your computer/VM is established."
-		echo " "
-	else
-		echo "MAC Change (wlan0) status: "
-		echo " "
-	   	sudo macchanger -r $type_wlan
-		echo " "
-		echo "Changed MAC of NIC/$type_wlan"
-	fi
+    #randomize MAC address using macchanger
+    echo "Randomizing MAC for $type_wlan..."
+    sudo macchanger -r $type_wlan
+    echo "Randomized MAC for $type_wlan"
 fi
+
+#check global network connectivity after MAC change (ping to google dns for verif.)
+echo "Checking network connectivity..."
+if ! ping -c 3 8.8.8.8 &> /dev/null; then
+    echo "Network is not reachable after changing MAC address. Check your connection."
+else
+    echo "Network is reachable."
+fi
+
+#offer user to revert to original/previous MAC address
+read -p "Would you like to revert to the original MAC address? (y/n): " revert
+if [ "$revert" == "y" ]; then
+    if [[ $input == 1 ]]; then
+        sudo macchanger -p $type_eth
+        echo "Original MAC restored for $type_eth."
+    else
+        sudo macchanger -p $type_wlan
+        echo "Original MAC restored for $type_wlan."
+    fi
+fi
+
+#log the MAC change event to a log file
+log_file="/var/log/mac_randomizer.log"
+echo "$(date) - Changed MAC for $type_eth/$type_wlan" >> $log_file
+
+echo "Script finished."
